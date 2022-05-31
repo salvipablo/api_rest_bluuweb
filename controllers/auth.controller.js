@@ -59,5 +59,14 @@ export const login = async (req, res) => {
 };
 
 export const infoUser = async (req, res) => {
-  res.json({ user: 'correo@correo.com' });
+  try {
+    // lean es para que la busqueda, no venga con toda la informacion y metodos
+    // Esto devuelve un objeto simple de javascript con la informacion
+    // Esto da mas velocidad a la consulta y la devolucion y menos cosumo de recursos
+    const user = await User.findById(req.uid).lean();
+    
+    res.json({ email: user.email });
+  } catch (error) {
+    res.status(500).json({ error: 'Error en servidor' });
+  }
 }
