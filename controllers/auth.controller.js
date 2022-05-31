@@ -1,7 +1,9 @@
-import { User } from "../models/Users.js";
-//import jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
-import { generateToken } from "../utils/tokenManager.js";
+import { User } from "../models/Users.js";
+
+
+import { generateRefreshToken, generateToken } from "../utils/tokenManager.js";
 
 export const register = async (req, res) => {
   const { email, password } = req.body;
@@ -50,7 +52,9 @@ export const login = async (req, res) => {
     if (!correctPassword) 
                 return res.status(403).json({ error: "Contraseña incorrecta" })
 
+    // Generae el token JWT. 
     const { token, expiresIn } = generateToken(user._id);
+    generateRefreshToken(user._id, res);
 
     return res.json({ ok: "Login", token: token, expires: expiresIn });
   } catch (error) {
@@ -62,11 +66,35 @@ export const infoUser = async (req, res) => {
   try {
     // lean es para que la busqueda, no venga con toda la informacion y metodos
     // Esto devuelve un objeto simple de javascript con la informacion
-    // Esto da mas velocidad a la consulta y la devolucion y menos cosumo de recursos
+    // Da mas velocidad a la consulta y la devolucion, menos cosumo de recursos
     const user = await User.findById(req.uid).lean();
     
     res.json({ email: user.email });
   } catch (error) {
     res.status(500).json({ error: 'Error en servidor' });
   }
-}
+};
+
+export const refreshToken = (req, res) => {
+  try {
+    const token = req.cookies.refreshToken;
+
+    if ( !token ) throw new Error("No Bearer");
+
+    //const 
+  } catch (error) {
+    console.log(error);
+
+    const tokenVerificationErrors = {
+      "invalid signature": "La firma del jwt no es valida",
+      "jwt expired": "JWT Expirado",
+      "invalid token": "Token no valido",
+      "No Bearer": "No existe el token en el header - Utiliza Bearer",
+      "jwt malformed": "JWT - Formato no valido"
+    }
+
+    return res
+              .status(401)
+              .json({ error: tokenVerificationErrors[error.message] });
+  }
+};

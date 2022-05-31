@@ -20,6 +20,7 @@
         "jwt expired": "JWT Expirado",
         "invalid token": "Token no valido",
         "No Bearer": "No existe el token en el header - Utiliza Bearer",
+        "jwt malformed": "JWT - Formato no valido"
       }
 
       return res
