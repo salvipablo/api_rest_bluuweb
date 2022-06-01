@@ -1,9 +1,8 @@
 import jwt from "jsonwebtoken";
 
 import { User } from "../models/Users.js";
-
-
-import { generateRefreshToken, generateToken } from "../utils/tokenManager.js";
+import { generateRefreshToken, generateToken, tokenVerificationErrors } 
+                                              from "../utils/tokenManager.js";
 
 export const register = async (req, res) => {
   const { email, password } = req.body;
@@ -24,9 +23,8 @@ export const register = async (req, res) => {
 
     await user.save();
 
-    // jwt token
-
-    return res.status(201).json({ ok: true, description: "Usuario registrado." });
+    return res.status(201).json(
+                            { ok: true, description: "Usuario registrado." });
 
   } catch (error) {
     console.log(error);
@@ -46,11 +44,11 @@ export const login = async (req, res) => {
 
     let user = await User.findOne({ email });
 
-    if (!user) return res.status(403).json({ error: "No existe este usuario" })
+    if (!user) return res.status(403).json({ error: "No existe este usuario" });
 
     const correctPassword = await user.comparePassword(password);
     if (!correctPassword) 
-                return res.status(403).json({ error: "Contraseña incorrecta" })
+              return res.status(403).json({ error: "Contraseña incorrecta" });
 
     // Generate el token JWT. 
     //const { token, expiresIn } = generateToken(user._id);
@@ -79,30 +77,12 @@ export const infoUser = async (req, res) => {
 
 export const refreshToken = (req, res) => {
   try {
-    const refreshTokenCookie = req.cookies.refreshToken;
-
-    if ( !refreshTokenCookie ) throw new Error("No refreshTokenCookie");
-
-    const { uid } = jwt.verify(refreshTokenCookie, process.env.JWT_REFRESH);
-
-    const { token, expiresIn } = generateToken(uid);
+    const { token, expiresIn } = generateToken(req.uid);
 
     return res.json({ token, expiresIn });
   } catch (error) {
     console.log(error);
-
-    const tokenVerificationErrors = {
-      "invalid signature": "La firma del jwt no es valida",
-      "jwt expired": "JWT Expirado",
-      "invalid token": "Token no valido",
-      "No Bearer": "No existe el token en el header - Utiliza Bearer",
-      "jwt malformed": "JWT - Formato no valido",
-      "No refreshTokenCookie": "No tiene el token de refresh"
-    }
-
-    return res
-              .status(401)
-              .json({ error: tokenVerificationErrors[error.message] });
+    res.status(500).json({ error: 'Error en servidor' });
   }
 };
 
