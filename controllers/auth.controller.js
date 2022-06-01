@@ -52,11 +52,13 @@ export const login = async (req, res) => {
     if (!correctPassword) 
                 return res.status(403).json({ error: "Contraseña incorrecta" })
 
-    // Generae el token JWT. 
-    const { token, expiresIn } = generateToken(user._id);
+    // Generate el token JWT. 
+    //const { token, expiresIn } = generateToken(user._id);
+    
+    // Generate el token JWT. 
     generateRefreshToken(user._id, res);
 
-    return res.json({ ok: "Login", token: token, expires: expiresIn });
+    return res.json({ ok: "Login satisfactorio" });
   } catch (error) {
     return res.status(500).json({ error: "Error de servidor" });
   }
@@ -77,11 +79,15 @@ export const infoUser = async (req, res) => {
 
 export const refreshToken = (req, res) => {
   try {
-    const token = req.cookies.refreshToken;
+    const refreshTokenCookie = req.cookies.refreshToken;
 
-    if ( !token ) throw new Error("No Bearer");
+    if ( !refreshTokenCookie ) throw new Error("No refreshTokenCookie");
 
-    //const 
+    const { uid } = jwt.verify(refreshTokenCookie, process.env.JWT_REFRESH);
+
+    const { token, expiresIn } = generateToken(uid);
+
+    return res.json({ token, expiresIn });
   } catch (error) {
     console.log(error);
 
@@ -90,7 +96,8 @@ export const refreshToken = (req, res) => {
       "jwt expired": "JWT Expirado",
       "invalid token": "Token no valido",
       "No Bearer": "No existe el token en el header - Utiliza Bearer",
-      "jwt malformed": "JWT - Formato no valido"
+      "jwt malformed": "JWT - Formato no valido",
+      "No refreshTokenCookie": "No tiene el token de refresh"
     }
 
     return res
@@ -98,3 +105,8 @@ export const refreshToken = (req, res) => {
               .json({ error: tokenVerificationErrors[error.message] });
   }
 };
+
+export const logout = (req, res) => {
+  res.clearCookie('refreshToken');
+  res.json({ ok: "Logout" });
+}
