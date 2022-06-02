@@ -13,6 +13,30 @@ export const getLinks = async (req, res) => {
   }
 };
 
+export const getLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const link = await Link.findById(id);
+
+    if ( !link ) 
+            return res.status(404).json({ error: 'No existe el ID buscado' });
+
+    if ( !link.uid.equals(req.uid) ) 
+                            return res.status(401).json(
+                              { error: 'No esta autorizado para ver ese id' }
+                            );
+
+    return res.json({ link });
+  } catch (error) {
+    if (error.kind === "ObjectId") 
+            return res.status(403).json({ error: 'Formato de ID incorrecto' });
+
+    console.log(error);
+    res.status(500).json({ error: "Error de servidor" });
+  }
+};
+
 export const createLink = async (req, res) => {
   try {
     let { longLink } = req.body;
@@ -27,6 +51,32 @@ export const createLink = async (req, res) => {
   } catch (error) {
     console.log(error);
 
+    res.status(500).json({ error: "Error de servidor" });
+  }
+};
+
+export const removeLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const link = await Link.findById(id);
+
+    if ( !link ) 
+            return res.status(404).json({ error: 'No existe el ID buscado' });
+
+    if ( !link.uid.equals(req.uid) ) 
+                        return res.status(401).json(
+                          { error: 'No esta autorizado para eliminar ese id' }
+                        );
+
+    await link.remove();
+
+    return res.json({ link, msg: "Link removido" });
+  } catch (error) {
+    if (error.kind === "ObjectId") 
+            return res.status(403).json({ error: 'Formato de ID incorrecto' });
+
+    console.log(error);
     res.status(500).json({ error: "Error de servidor" });
   }
 };
