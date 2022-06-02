@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
 const linkSchema = new Schema({
-  lonkLink: {
+  longLink: {
     type: String,
     required: true,
     trim: true

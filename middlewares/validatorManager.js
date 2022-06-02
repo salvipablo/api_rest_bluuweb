@@ -1,3 +1,4 @@
+import axios from "axios";
 import { validationResult, body } from "express-validator";
 
 export const validationResultExpress = (req, res, next) => {
@@ -36,5 +37,26 @@ export const bodyLoginValidator = [
   body('password', 'Minimo 6 caracteres para la contraseña')
     .trim()
     .isLength({ min: 6 }),
+  validationResultExpress
+];
+
+export const bodyLinkValidator = [
+  body('longLink', 'El link enviado no es valido')
+    .trim()
+    .notEmpty()
+    .custom(async value => {
+      try {
+
+        if ( !value.startsWith('https://') ) value = 'https://' + value
+
+        await axios.get(value);
+
+        return value;
+      } catch (error) {
+        console.log(error);
+
+        throw new Error('Not found longLink 404');
+      }
+    }),
   validationResultExpress
 ];
