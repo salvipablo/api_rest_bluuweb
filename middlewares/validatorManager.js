@@ -1,5 +1,5 @@
 import axios from "axios";
-import { validationResult, body } from "express-validator";
+import { validationResult, body, param } from "express-validator";
 
 export const validationResultExpress = (req, res, next) => {
   const errors = validationResult(req);
@@ -37,6 +37,14 @@ export const bodyLoginValidator = [
   body('password', 'Minimo 6 caracteres para la contraseña')
     .trim()
     .isLength({ min: 6 }),
+  validationResultExpress
+];
+
+export const paramLinkValidator = [
+  param('id', 'Formato de ID no valido')
+    .trim()
+    .notEmpty()
+    .escape(),
   validationResultExpress
 ];
 
