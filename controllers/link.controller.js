@@ -15,6 +15,26 @@ export const getLinks = async (req, res) => {
 
 export const getLink = async (req, res) => {
   try {
+    const { nanoLink } = req.params;
+
+    const link = await Link.findOne({ nanoLink });
+
+    if ( !link ) 
+        return res.status(404).json({ error: 'No existe el nanoLink buscado' });
+
+    return res.json({ longLink: link.longLink });
+  } catch (error) {
+    if (error.kind === "ObjectId") 
+            return res.status(403).json({ error: 'Formato de ID incorrecto' });
+
+    console.log(error);
+    res.status(500).json({ error: "Error de servidor" });
+  }
+};
+
+// Para un crud tradicional
+export const getLinkCRUD = async (req, res) => {
+  try {
     const { id } = req.params;
 
     const link = await Link.findById(id);
@@ -66,7 +86,7 @@ export const removeLink = async (req, res) => {
 
     if ( !link.uid.equals(req.uid) ) 
                         return res.status(401).json(
-                          { error: 'No esta autorizado para eliminar ese id' }
+                          { error: 'No esta autorizado para eliminar este id' }
                         );
 
     await link.remove();
@@ -95,7 +115,7 @@ export const updateLink = async (req, res) => {
 
     if ( !link.uid.equals(req.uid) ) 
                         return res.status(401).json(
-                          { error: 'No esta autorizado para eliminar ese id' }
+                          { error: 'No esta autorizado para editar este id' }
                         );
 
     link.longLink = longLink

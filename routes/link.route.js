@@ -9,7 +9,7 @@ import { bodyLinkValidator, paramLinkValidator }
 const router = Router();
 
 router.get('/', requireToken, getLinks);
-router.get('/:id', requireToken, paramLinkValidator, getLink);
+router.get('/:nanoLink', getLink);
 
 router.post('/', requireToken, bodyLinkValidator, createLink);
 
